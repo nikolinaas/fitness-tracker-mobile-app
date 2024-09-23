@@ -1,0 +1,16 @@
+.btn-list{
+    height: 100%;
+    background-color: #9fdfbf;
+}
+
+.scrollView{
+    height: 100%;
+    background-color: #263d32;
+}
+.container{
+    flex: 1;
+    align-items: center;
+
+    justify-content: flex-start;
+    
+}
