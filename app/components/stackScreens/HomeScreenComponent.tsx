@@ -1,11 +1,10 @@
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator, PermissionsAndroid, ImageBackground } from "react-native";
+import { View, Text, StyleSheet, Dimensions, ActivityIndicator, PermissionsAndroid, ImageBackground, Image } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ProgressChart } from "react-native-chart-kit";
 import { LinearGradient } from "expo-linear-gradient";
 import "../../styles/StyleActivities.css"
 import axios from "axios";
-import Geolocation from '@react-native-community/geolocation';
-import config from "../../../metro.config";
+import * as Location from 'expo-location';
 
 
 const screenHeight = Dimensions.get('window').height;
@@ -44,7 +43,6 @@ const styles = StyleSheet.create({
     },
     boxLabel: {
         flex: 1,
-        //  justifyContent: "flex-start",
         borderRadius: 30,
         minHeight: screenHeight / 2.8,
         width: screenWidth - 20,
@@ -84,6 +82,7 @@ export function HomeScreen() {
 
     const API_KEY = '0519f2e13ebaf2839b396894f3bc8e37';
     const CITY = 'Dubai';
+    const GOOGLE_API_KEY = 'AIzaSyA-yYE8ihM2rqirBu1ruRCBEy07C0A7yFY'
 
     const imageClouds80x = { uri: '../../../assets/weatherBackgrounds/clouds.jpg' }
     const imageRain5xx = { uri: '../../../assets/weatherBackgrounds/rain.jpg' }
@@ -95,6 +94,19 @@ export function HomeScreen() {
     const [weatherData, setWeatherData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState<any>(null);
+    const [longitude, setLongitude] = useState<any>(null);
+    const [latitude, setLatitude] = useState<any>(null);
+    const [cityWeather, setCityWeather] = useState("");
+    const [errorMsg, setErrorMsg] = useState("null");
+
+
+
+    let text = 'Waiting..';
+    if (errorMsg) {
+        text = errorMsg;
+    } else if (location) {
+        text = JSON.stringify(location);
+    }
 
     const props = {
         activeStrokeWidth: 25,
@@ -103,28 +115,52 @@ export function HomeScreen() {
     };
 
 
-    const requestPermission = async () => {
+
+    const fetchWeather = async (city: any) => {
+        console.log("ccccccccc" + city)
         try {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                {
-                    title: 'Location Permission',
-                    message: 'This app needs access to your location',
-                    buttonNeutral: 'Ask Me Later',
-                    buttonNegative: 'Cancel',
-                    buttonPositive: 'OK',
-                },
+            const response = await axios.get(
+                `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
             );
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                console.log('You can use the location');
-                return true;
-            } else {
-                console.log('Location permission denied');
-                return false;
-            }
-        } catch (err) {
-            console.warn(err);
+            setWeatherData(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching weather data: ", error);
+            setLoading(false);
         }
+    }
+
+    async function getCity(lat: any, long: any) {
+
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${long}&key=${GOOGLE_API_KEY}`;
+        console.log(url)
+        const response = await axios.get(url)
+        const data = response.data.results[0].address_components[2].long_name
+        console.log(data);
+        fetchWeather(data)
+        setCityWeather(data);
+        return data;
+
+    }
+
+    const requestPermission = async () => {
+
+
+        (async () => {
+
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setErrorMsg('Permission to access location was denied');
+                return;
+            }
+
+            let location = await Location.getCurrentPositionAsync({});
+            console.log(location.coords.latitude);
+            getCity(location.coords.latitude, location.coords.longitude)
+            //  setLocation(location);
+        })();
+
+
     };
 
 
@@ -132,24 +168,6 @@ export function HomeScreen() {
 
         requestPermission();
 
-
-        const fetchWeather = async () => {
-            try {
-                const response = await axios.get(
-                    `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric`
-                );
-                setWeatherData(response.data);
-                setLoading(false);
-            } catch (error) {
-                console.error("Error fetching weather data: ", error);
-                setLoading(false);
-            }
-        };
-        Geolocation.getCurrentPosition(info => {
-            console.log(info);
-            //setLocation(info);
-        });
-        fetchWeather();
     }, [])
 
 
@@ -158,19 +176,19 @@ export function HomeScreen() {
 
         if ((code + "").startsWith("5") === true) {
 
-            return imageRain5xx.uri;
+            return require('../../../assets/weatherBackgrounds/rain.jpg');
         } else if ((code + "").startsWith("80") == true && !(code === "800")) {
-            return imageClouds80x.uri;
+            return require('../../../assets/weatherBackgrounds/clouds.jpg');
         } else if (code === "800") {
-            return imageClearSky800.uri;
+            return require('../../../assets/weatherBackgrounds/clearSky.jpg');
         } else if ((code + "").startsWith("20")) {
-            return imageThunderstorm2xx.uri;
+            return require('../../../assets/weatherBackgrounds/thunderstorm.jpg');
         } else if ((code + "").startsWith("70")) {
-            return imageAtmosphere7xx.uri;
+            return require('../../../assets/weatherBackgrounds/atmosphere.jpg');
         } else if ((code + "").startsWith("30")) {
-            return imageDrizzle3xx.uri;
+            return require('../../../assets/weatherBackgrounds/drizzle.jpg');
         } else if ((code + "").startsWith("60")) {
-            return imageSnow6xx.uri;
+            return require('../../../assets/weatherBackgrounds/snow.jpg');
         }
     }
 
@@ -194,7 +212,7 @@ export function HomeScreen() {
 
                 <View style={styles.boxLabel}>
                     {weatherData === null ? <Text>No weather data available.</Text> :
-                        <ImageBackground source={getImageByCode(weatherData.weather[0].id + "")} resizeMode="cover" style={styles.image}>
+                        <ImageBackground source={getImageByCode(weatherData.weather[0].id)} resizeMode="cover" style={styles.image}>
 
                             <View style={styles.weatherData}>
 
@@ -206,26 +224,17 @@ export function HomeScreen() {
                                 <Text>Clouds: {weatherData.clouds.all} %</Text>
                                 <Text>Weather: {weatherData.weather[0].main}</Text>
                                 <Text>Description: {weatherData.weather[0].description}</Text>
-                                <Text><img src={`http://openweathermap.org/img/w/${weatherData.weather[0].icon}.png`}></img></Text>
+
+                                <Image source={{ uri: `http://openweathermap.org/img/w/${weatherData.weather[0].icon}.png` }} style={{ width: 100, height: 100 }} />
                             </View>
                         </ImageBackground>}
-
                 </View>
 
             </View>
-
-
-
-
-
-
             <Text style={styles.viewLoading}> <Text>{loading === true ?
                 <ActivityIndicator size="large" color="#0000ff" /> : <Text></Text>}
             </Text>
-
-
             </Text>
-            <br />
             <Text>
                 {location}
             </Text>

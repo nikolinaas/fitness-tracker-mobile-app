@@ -6,20 +6,18 @@ import { Activities } from './stackComponents/ActivitiesComponent';
 import { useColorScheme } from 'react-native';
 import React, { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
 
 const Tab = createMaterialBottomTabNavigator();
 export function NavBar() {
 
-    let colorScheme = useColorScheme();
-    const [activeColorr, setActiveColorr] = useState("");
 
-    const Stack = createStackNavigator();
   return (
     <Tab.Navigator
       initialRouteName="Feed"
       activeColor="powderblue"
       barStyle={{ backgroundColor: 'steelblue' }}
+      key={"key"}
+     
     >
       <Tab.Screen
         name="Feed"
@@ -32,6 +30,7 @@ export function NavBar() {
         }}
       />
       <Tab.Screen
+      key={"key2"}
         name="Activities"
         component={Activities}
         options={{
@@ -45,6 +44,7 @@ export function NavBar() {
         
       </Tab.Screen>
       <Tab.Screen
+      key={"key3"}
         name="Profile"
         component={ProfileStack}
         options={{
@@ -55,6 +55,7 @@ export function NavBar() {
         }}
       />
     </Tab.Navigator>
+   
   );
 }
 

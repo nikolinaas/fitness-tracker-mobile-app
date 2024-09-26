@@ -65,7 +65,7 @@ export function ActivitiesList({ navigation }: { navigation: any }) {
       { key: 'Hiking', icon: "biathlon", path: "Hiking" }
     ]}
       renderItem={({ item }) =>
-      <TouchableOpacity onPress={() => { navigation.navigate(item.path); }} style={styles.button}>
+      <TouchableOpacity key={item.key} onPress={() => { navigation.navigate(item.path); }} style={styles.button}>
      <Text style={styles.text}> <MaterialCommunityIcons  name={item.icon} color={"black"} size={24} /> {item.key} </Text>
 </TouchableOpacity>}
      //<Button id="button" style={styles.button} onPress={() => { navigation.navigate(item.path); }}> <MaterialCommunityIcons style={styles.text} name={item.icon} color={"black"} size={24} /> <Text style={styles.text}> {item.key} </Text></Button>}

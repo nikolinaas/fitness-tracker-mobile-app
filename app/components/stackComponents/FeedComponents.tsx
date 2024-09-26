@@ -12,8 +12,8 @@ export function Feed(){
 
     return(
       
-        <Stack.Navigator>
-          <Stack.Screen name="Home" component={HomeScreen}/>
+        <Stack.Navigator key={"stackNavigator"}>
+          <Stack.Screen key={"stackScreenHome"} name="Home" component={HomeScreen}/>
         </Stack.Navigator>
         
        
