@@ -4,6 +4,7 @@ import { Dimensions, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, V
 import { Button } from "react-native-paper";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Pedometer } from 'expo-sensors';
+import React from 'react';
 
 
 const screenWidth = Dimensions.get('window').width;

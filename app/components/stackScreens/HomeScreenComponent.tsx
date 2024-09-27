@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator, PermissionsAndroid, ImageBackground, Image } from "react-native";
+import { View, Text, StyleSheet, Dimensions, ActivityIndicator, PermissionsAndroid, ImageBackground, Image, Animated } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ProgressChart } from "react-native-chart-kit";
 import { LinearGradient } from "expo-linear-gradient";
@@ -83,14 +83,6 @@ export function HomeScreen() {
     const API_KEY = '0519f2e13ebaf2839b396894f3bc8e37';
     const CITY = 'Dubai';
     const GOOGLE_API_KEY = 'AIzaSyA-yYE8ihM2rqirBu1ruRCBEy07C0A7yFY'
-
-    const imageClouds80x = { uri: '../../../assets/weatherBackgrounds/clouds.jpg' }
-    const imageRain5xx = { uri: '../../../assets/weatherBackgrounds/rain.jpg' }
-    const imageClearSky800 = { uri: '../../../assets/weatherBackgrounds/clearSky.jpg' }
-    const imageThunderstorm2xx = { uri: '../../../assets/weatherBackgrounds/thunderstorm.jpg' }
-    const imageAtmosphere7xx = { uri: '../../../assets/weatherBackgrounds/atmosphere.jpg' }
-    const imageDrizzle3xx = { uri: '../../../assets/weatherBackgrounds/drizzle.jpg' }
-    const imageSnow6xx = { uri: '../../../assets/weatherBackgrounds/snow.jpg' }
     const [weatherData, setWeatherData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState<any>(null);
@@ -212,10 +204,9 @@ export function HomeScreen() {
 
                 <View style={styles.boxLabel}>
                     {weatherData === null ? <Text>No weather data available.</Text> :
-                        <ImageBackground source={getImageByCode(weatherData.weather[0].id)} resizeMode="cover" style={styles.image}>
+                        <ImageBackground key={'image-${index}'} source={getImageByCode(weatherData.weather[0].id)} resizeMode="cover" style={{width: 100, height: 100 }}>
 
                             <View style={styles.weatherData}>
-
                                 <Text>City: {weatherData.name}</Text>
                                 <Text>Temperature: {weatherData.main.temp} °C</Text>
                                 <Text>Feels like: {weatherData.main.feels_like} °C</Text>
@@ -224,8 +215,7 @@ export function HomeScreen() {
                                 <Text>Clouds: {weatherData.clouds.all} %</Text>
                                 <Text>Weather: {weatherData.weather[0].main}</Text>
                                 <Text>Description: {weatherData.weather[0].description}</Text>
-
-                                <Image source={{ uri: `http://openweathermap.org/img/w/${weatherData.weather[0].icon}.png` }} style={{ width: 100, height: 100 }} />
+                              <Animated.Image    key={'image-${index}'} source={{ uri: `http://openweathermap.org/img/w/${weatherData.weather[0].icon}.png` }} style={{ width: 100, height: 100 }} />
                             </View>
                         </ImageBackground>}
                 </View>

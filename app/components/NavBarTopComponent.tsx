@@ -3,9 +3,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { ProfileStack } from './stackComponents/ProfileComponent';
 import { Feed } from './stackComponents/FeedComponents';
 import { Activities } from './stackComponents/ActivitiesComponent';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, View } from 'react-native';
 import React, { useState } from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
 
 const Tab = createMaterialBottomTabNavigator();
 export function NavBar() {
@@ -55,6 +54,7 @@ export function NavBar() {
         }}
       />
     </Tab.Navigator>
+
    
   );
 }
