@@ -46,7 +46,10 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         minHeight: screenHeight / 2.8,
         width: screenWidth - 20,
-        margin: 10
+        margin: 10,
+        alignItems:"center",
+         justifyContent: "flex-start"
+
     },
     viewLoading: {
         flex: 1
@@ -56,11 +59,13 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         aspectRatio: 1,
-        width: '100%',
         overflow: 'hidden',
         borderRadius: 20,
         alignItems: 'stretch',
-        padding: 10
+        padding: 10,
+        margin:10,
+        minHeight: screenHeight / 2.6,
+        width: screenWidth - 20,
     },
     weatherData: {
         backgroundColor: 'rgba(255,255,255,0.2)',
@@ -148,6 +153,8 @@ export function HomeScreen() {
 
             let location = await Location.getCurrentPositionAsync({});
             console.log(location.coords.latitude);
+            console.log(location.coords.longitude);
+
             getCity(location.coords.latitude, location.coords.longitude)
             //  setLocation(location);
         })();
@@ -166,13 +173,15 @@ export function HomeScreen() {
 
     const getImageByCode = (code: any): any => {
 
+        console.log(code)
         if ((code + "").startsWith("5") === true) {
 
             return require('../../../assets/weatherBackgrounds/rain.jpg');
-        } else if ((code + "").startsWith("80") == true && !(code === "800")) {
-            return require('../../../assets/weatherBackgrounds/clouds.jpg');
+
         } else if (code === "800") {
             return require('../../../assets/weatherBackgrounds/clearSky.jpg');
+        } else if ((code + "").startsWith("80") && (code !== "800")) {
+            return require('../../../assets/weatherBackgrounds/clouds.jpg');
         } else if ((code + "").startsWith("20")) {
             return require('../../../assets/weatherBackgrounds/thunderstorm.jpg');
         } else if ((code + "").startsWith("70")) {
@@ -204,10 +213,10 @@ export function HomeScreen() {
 
                 <View style={styles.boxLabel}>
                     {weatherData === null ? <Text>No weather data available.</Text> :
-                        <ImageBackground key={'image-${index}'} source={getImageByCode(weatherData.weather[0].id)} resizeMode="cover" style={{width: 100, height: 100 }}>
+                        <ImageBackground key={'image-${index}'} source={getImageByCode(weatherData.weather[0].id)} resizeMode="cover" style={styles.image}>
 
                             <View style={styles.weatherData}>
-                                <Text>City: {weatherData.name}</Text>
+                                <Text>Location: {weatherData.name}</Text>
                                 <Text>Temperature: {weatherData.main.temp} °C</Text>
                                 <Text>Feels like: {weatherData.main.feels_like} °C</Text>
                                 <Text>Humidity: {weatherData.main.humidity} %</Text>
