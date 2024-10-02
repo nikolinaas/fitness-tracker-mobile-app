@@ -152,11 +152,11 @@ export function HomeScreen() {
             }
 
             let location = await Location.getCurrentPositionAsync({});
+            console.log(location)
             console.log(location.coords.latitude);
             console.log(location.coords.longitude);
 
             getCity(location.coords.latitude, location.coords.longitude)
-            //  setLocation(location);
         })();
 
 

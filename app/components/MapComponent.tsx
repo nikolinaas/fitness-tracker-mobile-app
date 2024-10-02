@@ -43,13 +43,13 @@ export function Map({ started, ...props }: Props) {
     const flipInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
 
-    function getSeconds(time:any){
-        return `0${time%60}`.slice(-2);
-      }
-    
-    function getMinutes(time:any){
-        return Math.floor(time/60);
-      }
+    function getSeconds(time: any) {
+        return `0${time % 60}`.slice(-2);
+    }
+
+    function getMinutes(time: any) {
+        return Math.floor(time / 60);
+    }
 
     const requestLocationPermission = async () => {
 
@@ -76,9 +76,9 @@ export function Map({ started, ...props }: Props) {
 
     function componentDidMount() {
 
-        
-        
-            flipInterval.current  = setInterval(() => {
+
+
+        flipInterval.current = setInterval(() => {
 
 
             (async () => {
@@ -92,8 +92,6 @@ export function Map({ started, ...props }: Props) {
                 let location = await Location.getCurrentPositionAsync({});
                 console.log("maaap" + location.coords.latitude);
                 console.log("maaap" + location.coords.longitude);
-              
-
                 const newCoordinate = {
                     latitude: location.coords.latitude,
                     longitude: location.coords.longitude
@@ -129,7 +127,7 @@ export function Map({ started, ...props }: Props) {
 
 
     useEffect(() => {
-        console.log("maap useefect" +started)
+        console.log("maap useefect" + started)
         requestLocationPermission();
         if (started === true) {
             console.log("map staaaaart")
@@ -140,7 +138,7 @@ export function Map({ started, ...props }: Props) {
             componentWillUnmount();
         }
         //
-    },[started]);
+    }, [started]);
 
 
 
@@ -149,33 +147,33 @@ export function Map({ started, ...props }: Props) {
             {location === true ? <MapView
                 style={{ flex: 1 }}
                 initialRegion={{
-                    latitude: 37.8025259,
-                    longitude:-122.4351431,
-                    latitudeDelta: 0.0122,
-                    longitudeDelta: 0.0121
+                    latitude: latitude,
+                    longitude: longitude,
+                    latitudeDelta: 0.0090,
+                    longitudeDelta: 0.0050
                 }}
             >
                 <Marker coordinate={{ latitude: latitude, longitude: longitude }} title="My location"></Marker>
                 <Polyline
                     coordinates={[
-                        {latitude: 37.8025259, longitude: -122.4351431},
-                        {latitude: 37.7896376, longitude: -122.421636},
-                        {latitude: 37.7896386, longitude: -122.421646},
-                        {latitude: 37.7665248, longitude: -122.4161628},
-                        {latitude: 37.7734153, longitude: -122.4577787},
-                        {latitude: 37.7948605, longitude: -122.4596065},
-                        {latitude: 37.8025259, longitude: -122.4351431},
-                      ]}
-                      strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-                      strokeColors={[
+                        { latitude: 44.765742, longitude: 17.2040878 },
+                        { latitude: 44.765769, longitude: 17.2040898 },
+                        { latitude: 44.665769, longitude: 16.8040898 },
+                        { latitude: 37.7665248, longitude: -122.4161628 },
+                        { latitude: 37.7734153, longitude: -122.4577787 },
+                        { latitude: 37.7948605, longitude: -122.4596065 },
+                        { latitude: 37.8025259, longitude: -122.4351431 },
+                    ]}
+                    strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
+                    strokeColors={[
                         '#7F0000',
                         '#00000000', // no color, creates a "long" gradient between the previous and next coordinate
                         '#B24112',
                         '#E5845C',
                         '#238C23',
                         '#7F0000',
-                      ]}
-                      strokeWidth={6}
+                    ]}
+                    strokeWidth={6}
                 />
             </MapView> : <ActivityIndicator size="large" color="#0000ff" />}
 

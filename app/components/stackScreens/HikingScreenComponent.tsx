@@ -29,6 +29,8 @@ export function Hiking(){
       };
     
       const subscribe = () => {
+        Barometer.getPermissionsAsync();
+     console.log(   Barometer.isAvailableAsync())
         setSubscription(Barometer.addListener(setData));
       };
     
