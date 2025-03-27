@@ -8,15 +8,12 @@ import React, { useState } from 'react';
 
 const Tab = createMaterialBottomTabNavigator();
 export function NavBar() {
-
-
   return (
     <Tab.Navigator
       initialRouteName="Feed"
       activeColor="powderblue"
       barStyle={{ backgroundColor: 'steelblue' }}
-      key={"key"}
-     
+      key={'key'}
     >
       <Tab.Screen
         name="Feed"
@@ -29,7 +26,7 @@ export function NavBar() {
         }}
       />
       <Tab.Screen
-      key={"key2"}
+        key={'key2'}
         name="Activities"
         component={Activities}
         options={{
@@ -38,12 +35,9 @@ export function NavBar() {
             <MaterialCommunityIcons name="run" color={color} size={26} />
           ),
         }}
-      >
-        
-        
-      </Tab.Screen>
+      ></Tab.Screen>
       <Tab.Screen
-      key={"key3"}
+        key={'key3'}
         name="Profile"
         component={ProfileStack}
         options={{
@@ -54,8 +48,5 @@ export function NavBar() {
         }}
       />
     </Tab.Navigator>
-
-   
   );
 }
-

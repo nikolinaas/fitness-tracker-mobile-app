@@ -1,187 +1,235 @@
-import React, { ReactNode, useEffect, useRef, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import MapView, { AnimatedRegion, Marker, Polyline } from "react-native-maps";
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import MapView, { AnimatedRegion, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
-import axios from "axios";
+import axios from 'axios';
+import { render } from 'react-dom';
+
 interface Props {
-    started?: any
-    // any props that come into the component
+  started?: any;
+  distanceSet: (param: any) => void;
+  speedSet: (param: any) => void;
+  coordinatesSet: (param: any) => void;
+  // any props that come into the component
 }
 
 interface State {
-    latitude: number,
-    longitude: number,
-    routeCoordinates: any[],
-    distanceTravelled: number,
-    prevLatLng: {},
-    coordinate: AnimatedRegion
+  latitude: number;
+  longitude: number;
+  routeCoordinates: any[];
+  distanceTravelled: number;
+  prevLatLng: {};
 }
 
-const initialState: State = {
+const styles = StyleSheet.create({
+  boxLabel: {
+    backgroundColor: 'rgba(22, 58, 89, 0.8)',
+    color: 'white',
+    flex: 1,
+    borderRadius: 25,
+    minHeight: 100,
+    width: 100,
+    margin: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  boxTimer: {
+    backgroundColor: 'rgba(22, 58, 89, 0.8)',
+    color: 'white',
+    flex: 1,
+    borderRadius: 25,
+    height: 100,
+    margin: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    color: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textData: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+});
+
+export function Map({
+  started,
+  distanceSet,
+  speedSet,
+  coordinatesSet,
+  ...props
+}: Props) {
+  const haversine = require('haversine');
+  const GOOGLE_API_KEY = 'AIzaSyA-yYE8ihM2rqirBu1ruRCBEy07C0A7yFY';
+
+  const [latitude, setLatitude] = useState<any>(null);
+  const [longitude, setLongitude] = useState<any>(null);
+  const initialState: State = {
     latitude: 0,
     longitude: 0,
-    routeCoordinates: [],
+    routeCoordinates: [{ longitude: longitude, latitude: latitude }],
     distanceTravelled: 0,
     prevLatLng: {},
-    coordinate: new AnimatedRegion({
-        latitude: 0,
-        longitude: 0
-    })
-}
+  };
 
-export function Map({ started, ...props }: Props) {
+  const [errorMsg, setErrorMsg] = useState('null');
+  const [location, setLocation] = useState(false);
+  const [state, setState] = useState<State>(initialState);
+  const [intervalTimer, setTimerInterval] = useState<any>(null);
+  const flipInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [speed, setSpeed] = useState<any>(0);
 
-    const GOOGLE_API_KEY = 'AIzaSyA-yYE8ihM2rqirBu1ruRCBEy07C0A7yFY';
+  const requestLocationPermission = async () => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
 
-    const [latitude, setLatitude] = useState<any>(null);
-    const [longitude, setLongitude] = useState<any>(null);
-    const [errorMsg, setErrorMsg] = useState("null");
-    const [location, setLocation] = useState(false);
-    const [state, setState] = useState<State>(initialState);
-    const [intervalTimer, setTimerInterval] = useState<any>(null);
-    const [timer, setTimer] = React.useState(5);
-    const flipInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+      let location = await Location.getCurrentPositionAsync({});
+      setLatitude(location.coords.latitude);
+      setLongitude(location.coords.longitude);
+      setLocation(true);
+    })();
+  };
 
+  const calcDistance = (newLatLng: any) => {
+    const { prevLatLng } = state;
+    const dist = haversine(prevLatLng, newLatLng) || 0;
+    return dist * 1000;
+  };
 
-    function getSeconds(time: any) {
-        return `0${time % 60}`.slice(-2);
-    }
-
-    function getMinutes(time: any) {
-        return Math.floor(time / 60);
-    }
-
-    const requestLocationPermission = async () => {
-
-
-        (async () => {
-
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                setErrorMsg('Permission to access location was denied');
-                return;
-            }
-
-            let location = await Location.getCurrentPositionAsync({});
-            console.log(location.coords.latitude);
-            console.log(location.coords.longitude);
-            setLatitude(location.coords.latitude);
-            setLongitude(location.coords.longitude);
-            setLocation(true);
-
-        })();
-    }
-
-
-
-    function componentDidMount() {
-
-
-
-        flipInterval.current = setInterval(() => {
-
-
-            (async () => {
-
-                let { status } = await Location.requestForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    setErrorMsg('Permission to access location was denied');
-                    return;
-                }
-                const { coordinate, routeCoordinates, distanceTravelled } = state;
-                let location = await Location.getCurrentPositionAsync({});
-                console.log("maaap" + location.coords.latitude);
-                console.log("maaap" + location.coords.longitude);
-                const newCoordinate = {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude
-                };
-                const statee: State = {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    routeCoordinates: routeCoordinates.concat([newCoordinate]),
-                    distanceTravelled: 0,
-                    prevLatLng: newCoordinate,
-                    coordinate: new AnimatedRegion({
-                        latitude: location.coords.latitude,
-                        longitude: location.coords.longitude
-                    })
-                }
-                setTimerInterval(flipInterval.current);
-                setState(statee);
-                setLocation(true);
-
-
-            })();
-
-
-
-        }, 1000);
-    }
-
-
-    function componentWillUnmount() {
-        console.log("stooopp TIMEEEEEEEEER")
-        clearInterval(intervalTimer);
-    }
-
-
-    useEffect(() => {
-        console.log("maap useefect" + started)
-        requestLocationPermission();
-        if (started === true) {
-            console.log("map staaaaart")
-            componentDidMount();
-
-        } else if (started === false) {
-            console.log("map stooop")
-            componentWillUnmount();
-        }
-        //
-    }, [started]);
-
-
-
-    return (
-        <View style={{ flex: 1 }}>
-            {location === true ? <MapView
-                style={{ flex: 1 }}
-                initialRegion={{
-                    latitude: latitude,
-                    longitude: longitude,
-                    latitudeDelta: 0.0090,
-                    longitudeDelta: 0.0050
-                }}
-            >
-                <Marker coordinate={{ latitude: latitude, longitude: longitude }} title="My location"></Marker>
-                <Polyline
-                    coordinates={[
-                        { latitude: 44.765742, longitude: 17.2040878 },
-                        { latitude: 44.765769, longitude: 17.2040898 },
-                        { latitude: 44.665769, longitude: 16.8040898 },
-                        { latitude: 37.7665248, longitude: -122.4161628 },
-                        { latitude: 37.7734153, longitude: -122.4577787 },
-                        { latitude: 37.7948605, longitude: -122.4596065 },
-                        { latitude: 37.8025259, longitude: -122.4351431 },
-                    ]}
-                    strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-                    strokeColors={[
-                        '#7F0000',
-                        '#00000000', // no color, creates a "long" gradient between the previous and next coordinate
-                        '#B24112',
-                        '#E5845C',
-                        '#238C23',
-                        '#7F0000',
-                    ]}
-                    strokeWidth={6}
-                />
-            </MapView> : <ActivityIndicator size="large" color="#0000ff" />}
-
-        </View>
+  async function getStartLocation() {
+    await Location.watchPositionAsync(
+      { accuracy: Location.Accuracy.High },
+      (loc) => {
+        const { routeCoordinates, distanceTravelled } = state;
+        const statee: State = {
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+          routeCoordinates: routeCoordinates.concat([loc.coords]),
+          distanceTravelled: distanceTravelled + calcDistance(loc.coords),
+          prevLatLng: loc.coords,
+        };
+      }
     );
+  }
+  function componentDidMount() {
+    getStartLocation();
+    flipInterval.current = setInterval(() => {
+      (async () => {
+        const { routeCoordinates, distanceTravelled } = state;
+        await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.High },
+          (loc) => {
+            const statee: State = {
+              latitude: loc.coords.latitude,
+              longitude: loc.coords.longitude,
+              routeCoordinates: routeCoordinates.concat([loc.coords]),
+              distanceTravelled: distanceTravelled + calcDistance(loc.coords),
+              prevLatLng: loc.coords,
+            };
+            setLatitude(loc.coords.latitude);
+            setLongitude(loc.coords.longitude);
+            setSpeed(loc.coords.speed);
 
-}
+            speedSet(loc.coords.speed);
+            setState(statee);
+            distanceSet(state.distanceTravelled);
+            coordinatesSet(state.routeCoordinates);
+          }
+        );
 
-function componentDidMount() {
-    throw new Error("Function not implemented.");
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setErrorMsg('Permission to access location was denied');
+          return;
+        }
+        setTimerInterval(flipInterval.current);
+        setLocation(true);
+      })();
+      console.log('cooord ' + state.routeCoordinates);
+    }, 1000);
+  }
+  function componentWillUnmount() {
+    console.log('stooopp TIMEEEEEEEEER');
+    clearInterval(intervalTimer);
+  }
+  useEffect(() => {
+    console.log('maap useefect' + started);
+    requestLocationPermission();
+    if (started === true) {
+      console.log('map staaaaart');
+      componentDidMount();
+    } else if (started === false) {
+      console.log('map stooop');
+      componentWillUnmount();
+    }
+  }, [speed]);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <View
+        style={{
+          marginTop: 10,
+          display: 'flex',
+          flexDirection: 'row',
+        }}
+      >
+        <View style={styles.boxLabel}>
+          <Text style={styles.text}>Distance</Text>
+          <Text style={styles.textData}>
+            {state.distanceTravelled.toFixed(2)}m
+          </Text>
+        </View>
+        <View style={styles.boxLabel}>
+          <Text style={styles.text}>Speed</Text>
+          <Text style={styles.textData}>{speed.toFixed(2)}km/h</Text>
+        </View>
+      </View>
+
+      {location === true ? (
+        <MapView
+          style={{ flex: 1 }}
+          region={{
+            latitude: latitude,
+            longitude: longitude,
+            latitudeDelta: 0.0012,
+            longitudeDelta: 0.0006,
+          }}
+        >
+          <Marker
+            coordinate={{ latitude: latitude, longitude: longitude }}
+            title="My location"
+          ></Marker>
+          <Polyline
+            coordinates={state.routeCoordinates}
+            strokeColor="#4682B4"
+            strokeColors={[
+              '#7F0000',
+              '#00000000',
+              '#B24112',
+              '#E5845C',
+              '#238C23',
+              '#7F0000',
+            ]}
+            strokeWidth={4}
+          />
+        </MapView>
+      ) : (
+        <ActivityIndicator size="large" color="#0000ff" />
+      )}
+    </View>
+  );
 }
